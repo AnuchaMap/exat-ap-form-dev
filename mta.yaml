@@ -1,0 +1,92 @@
+_schema-version: "3.2"
+ID: apsmanagement-dev
+version: 0.0.1
+modules:
+- name: apsmanagement-dev-destination-content
+  type: com.sap.application.content
+  requires:
+  - name: apsmanagement-dev-destination-service
+    parameters:
+      content-target: true
+  - name: apsmanagement-dev-html_repo_host
+    parameters:
+      service-key:
+        name: apsmanagement-dev-html_repo_host-key
+  - name: uaa_apsmanagement-dev
+    parameters:
+      service-key:
+        name: uaa_apsmanagement-dev-key
+  parameters:
+    content:
+      subaccount:
+        destinations:
+        - Name: apsmanagement-dev_html_repo_host
+          ServiceInstanceName: apsmanagement-dev-html5-app-host-service
+          ServiceKeyName: apsmanagement-dev-html_repo_host-key
+          sap.cloud.service: apsmanagement-dev
+        - Authentication: OAuth2UserTokenExchange
+          Name: apsmanagement-dev_uaa_apsmanagement
+          ServiceInstanceName: apsmanagement-dev-xsuaa-service
+          ServiceKeyName: uaa_apsmanagement-dev-key
+          sap.cloud.service: apsmanagement-dev
+        existing_destinations_policy: ignore
+  build-parameters:
+    no-source: true
+- name: apsmanagement-dev-app-content
+  type: com.sap.application.content
+  path: .
+  requires:
+  - name: apsmanagement-dev-html_repo_host
+    parameters:
+      content-target: true
+  build-parameters:
+    build-result: resources
+    requires:
+    - artifacts:
+      - apmgtnspworkflowuimodule-dev.zip
+      name: apmgtnspworkflowuimodule-dev
+      target-path: resources/
+- name: apmgtnspworkflowuimodule-dev
+  type: html5
+  path: workflow-ui-module
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm install
+    - npm run build:cf
+    supported-platforms: []
+resources:
+- name: apsmanagement-dev-destination-service
+  type: org.cloudfoundry.managed-service
+  parameters:
+    config:
+      HTML5Runtime_enabled: true
+      init_data:
+        subaccount:
+          destinations:
+          - Authentication: NoAuthentication
+            Name: ui5
+            ProxyType: Internet
+            Type: HTTP
+            URL: https://ui5.sap.com
+          existing_destinations_policy: update
+      version: 1.0.0
+    service: destination
+    service-name: apsmanagement-dev-destination-service
+    service-plan: lite
+- name: apsmanagement-dev-html_repo_host
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: html5-apps-repo
+    service-name: apsmanagement-dev-html5-app-host-service
+    service-plan: app-host
+- name: uaa_apsmanagement-dev
+  type: org.cloudfoundry.managed-service
+  parameters:
+    path: ./xs-security.json
+    service: xsuaa
+    service-name: apsmanagement-dev-xsuaa-service
+    service-plan: application
+parameters:
+  deploy_mode: html5-repo
