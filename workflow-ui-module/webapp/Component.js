@@ -2,7 +2,7 @@ sap.ui.define(
   [
     "sap/ui/core/UIComponent",
     "sap/ui/Device",
-    "apmgtnsp/workflowuimodule/model/models",
+    "apmgtnsp/workflowuimodule/dev/model/models",
     "sap/m/MessageBox",
     "sap/ui/core/BusyIndicator",
   ],
